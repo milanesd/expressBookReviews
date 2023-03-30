@@ -34,6 +34,7 @@ regd_users.post("/login", (req,res) => {
     req.session.authorization = {
       accessToken,username
   }
+  req.session.save();
   return res.status(200).send("User successfully logged in\n");
   } else {
     return res.status(208).json({message: "Invalid Login. Check username and password"});
@@ -41,9 +42,37 @@ regd_users.post("/login", (req,res) => {
 });
 
 // Add a book review
-regd_users.put("/auth/review/:isbn", (req, res) => {
-  //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+regd_users.put("/review/:isbn", (req, res) => {
+    const review = req.body.review;
+    const username = req.body.username;
+    const isbn = req.params.isbn;
+
+    let filteredIsbns = Object.keys(books).filter((book) => book === isbn);
+    if (filteredIsbns.length > 0)
+    {
+        books[isbn].reviews[username] = review;
+        return res.send("The review for the book with ISBN: " + isbn + "; has been added/updated.\n" + JSON.stringify(books[isbn].reviews));
+    } else {
+        return res.send("Unable to find ISBN: "+ isbn + "\n");
+    }
+
+});
+
+// Delete a book review
+regd_users.delete("/review/:isbn", (req, res) => {
+    const review = req.body.review;
+    const username = req.body.username;
+    const isbn = req.params.isbn;
+
+    let filteredIsbns = Object.keys(books).filter((book) => book === isbn);
+    if (filteredIsbns.length > 0)
+    {
+        delete books[isbn].reviews[username];
+        return res.send("The review for the book with ISBN: " + isbn + "; has been deleted.\n");
+    } else {
+        return res.send("Unable to find ISBN: "+ isbn + "\n");
+    }
+
 });
 
 module.exports.authenticated = regd_users;
